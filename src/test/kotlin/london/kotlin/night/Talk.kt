@@ -2,13 +2,14 @@
 
 package london.kotlin.night
 
+import com.amazonaws.services.kinesis.producer.KinesisProducer
+import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration
 import com.fasterxml.jackson.databind.ObjectMapper
+import okhttp3.HttpUrl
 import org.apache.commons.lang3.StringEscapeUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions
 import org.elasticsearch.index.query.QueryBuilders.*
-import org.fusesource.jansi.Ansi
-import org.fusesource.jansi.AnsiConsole
 import org.joda.time.DateTime
 import org.joda.time.Duration
 import org.junit.Test
@@ -17,75 +18,54 @@ import java.util.concurrent.Executors
 /*
 
 
-in big text:
-
-10 Things I'm Loving About Kotlin
-
-my email & title
-
-[v quick intro about Kaleida]
 
 
 
 
 
-figlet -f doh 1 | cowsay -n
 
 
- ____________
-/            \
-|  @@@@@@    |
-| @@@@@@@@   |
-|      @@@   |
-|     @!@    |
-|    !!@     |
-|   !!:      |
-|  !:!       |
-| :!:        |
-| :: :::::   |
-| :: : :::   |
-\            /
- ------------
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
+  1111111        000000000
+ 1::::::1      00:::::::::00
+1:::::::1    00:::::::::::::00
+111:::::1   0:::::::000:::::::0
+   1::::1   0::::::0   0::::::0
+   1::::1   0:::::0     0:::::0
+   1::::1   0:::::0     0:::::0   things I'm loving about Kotlin
+   1::::l   0:::::0 000 0:::::0
+   1::::l   0:::::0 000 0:::::0
+   1::::l   0:::::0     0:::::0
+   1::::l   0:::::0     0:::::0
+   1::::l   0::::::0   0::::::0
+111::::::1110:::::::000:::::::0
+1::::::::::1 00:::::::::::::00   Graham Tackley
+1::::::::::1   00:::::::::00     Cofounder & CTO
+111111111111     000000000       kaleida.com
 
 
 
- ______________________
-/                      \
-|  222222222222222     |
-| 2:::::::::::::::22   |
-| 2::::::222222:::::2  |
-| 2222222     2:::::2  |
-|             2:::::2  |
-|             2:::::2  |
-|          2222::::2   |
-|     22222::::::22    |
-|   22::::::::222      |
-|  2:::::22222         |
-| 2:::::2              |
-| 2:::::2              |
-| 2:::::2       222222 |
-| 2::::::2222222:::::2 |
-| 2::::::::::::::::::2 |
-| 22222222222222222222 |
-\                      /
- ----------------------
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
+
+
+
+
+
+
+
+
+
+
 */
 
 /* Opening poll */
-val percentUsingKotlinInProduction = 10
-val percentPlayedWithKotlin = 30
+val percentUsingKotlinInProduction = 5
+val percentPlayedWithKotlin = 99
 val percentPrimarilyJavaDevelopers = 80
 val percentPrimarilyOtherJvmLanguages = 20
+
+
+
+
+
 
 
 
@@ -110,7 +90,8 @@ class AudienceProfileTest {
             .isGreaterThan(25)
 
         softly.assertThat(percentPrimarilyJavaDevelopers)
-            .withFailMessage("Sorry I've assumed java knowledge, so take a nap if needs be")
+            .withFailMessage("Sorry I've assumed java knowledge, " +
+                "so take a nap if needs be")
             .isGreaterThan(75)
 
         softly.assertThat(percentPrimarilyOtherJvmLanguages)
@@ -131,22 +112,47 @@ class AudienceProfileTest {
 
 /*
 
-Number 1: Sensible type inference
+
+
+
+  1111111
+ 1::::::1
+1:::::::1
+111:::::1
+   1::::1
+   1::::1              sensible type inference
+   1::::1
+   1::::l
+   1::::l
+   1::::l
+   1::::l
+   1::::l
+111::::::111
+1::::::::::1
+1::::::::::1
+111111111111
+
+
+
+
+
+
+
+
+
 
  */
 
 val name = "John Smith"
 val splitName = name.split(' ')
 
+val i = 7
+
 // compile error:
 //val halfAName = name / 2
 
 fun lastName(name: String) = name.split(' ').last()
 
-
-class KotlinWelcomeClass(val name: String) {
-    fun sayHello() = "hello $name"
-}
 
 /*
 equivalent to this java class:
@@ -169,9 +175,42 @@ public class HelloJava {
 
  */
 
+class KotlinWelcomeClass(val name: String) {
+    fun sayHello() = "hello $name"
+}
+
 /*
 
-Number 2: Data Classes
+
+
+
+
+
+
+ 222222222222222
+2:::::::::::::::22
+2::::::222222:::::2
+2222222     2:::::2
+            2:::::2
+            2:::::2
+         2222::::2
+    22222::::::22            data classes
+  22::::::::222
+ 2:::::22222
+2:::::2
+2:::::2
+2:::::2       222222
+2::::::2222222:::::2
+2::::::::::::::::::2
+22222222222222222222
+
+
+
+
+
+
+
+
 
  */
 
@@ -182,8 +221,7 @@ data class Publisher(
     val summary: SummaryStats?
 )
 
-data class SummaryStats
-(
+data class SummaryStats(
     val articleCount: Int,
     val topicCount: Int,
     val socialInteractions: Int
@@ -244,7 +282,33 @@ class DataClassTest {
 
 /*
 
-Number 3: Java Library Integration (i)
+ _____________________
+/                     \
+|  333333333333333    |
+| 3:::::::::::::::33  |
+| 3::::::33333::::::3 |
+| 3333333     3:::::3 |
+|             3:::::3 |
+|             3:::::3 |
+|     33333333:::::3  |     java library integration (i)
+|     3:::::::::::3   |
+|     33333333:::::3  |
+|             3:::::3 |
+|             3:::::3 |
+|             3:::::3 |
+| 3333333     3:::::3 |
+| 3::::::33333::::::3 |
+| 3:::::::::::::::33  |
+|  333333333333333    |
+\                     /
+ ---------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+
 
 
  */
@@ -263,7 +327,35 @@ class JsonSerialisationTest {
 
 /*
 
-Number 4: Null Checks (with smart casts)
+
+
+ ____________________
+/                    \
+|        444444444   |
+|       4::::::::4   |
+|      4:::::::::4   |
+|     4::::44::::4   |
+|    4::::4 4::::4   |
+|   4::::4  4::::4   |
+|  4::::4   4::::4   |         null checks (with smart casts)
+| 4::::444444::::444 |
+| 4::::::::::::::::4 |
+| 4444444444:::::444 |
+|           4::::4   |
+|           4::::4   |
+|           4::::4   |
+|         44::::::44 |
+|         4::::::::4 |
+|         4444444444 |
+\                    /
+ --------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+
 
  */
 
@@ -300,7 +392,32 @@ fun dumpStats(stats: SummaryStats?) {
 
 /*
 
-Number 5: Collections
+ _____________________
+/                     \
+| 555555555555555555  |
+| 5::::::::::::::::5  |
+| 5::::::::::::::::5  |
+| 5:::::555555555555  |
+| 5:::::5             |
+| 5:::::5             |           collections
+| 5:::::5555555555    |
+| 5:::::::::::::::5   |
+| 555555555555:::::5  |
+|             5:::::5 |
+|             5:::::5 |
+| 5555555     5:::::5 |
+| 5::::::55555::::::5 |
+|  55:::::::::::::55  |
+|    55:::::::::55    |
+|      555555555      |
+\                     /
+ ---------------------
+        \   ^__^
+         \  (..)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
 
  */
 
@@ -329,7 +446,8 @@ fun doSearch(q: String): List<SearchResult> {
     return response.hits.mapNotNull { h ->
         val highlight = h.highlightFields["headline"]?.fragments
 
-        highlight?.let {
+        if (highlight == null) null
+        else {
             val combinedString = highlight.map { it.string() }.joinToString(" … ")
 
             SearchResult(
@@ -344,9 +462,49 @@ fun doSearch(q: String): List<SearchResult> {
 
 /*
 
-Number 6: SAM (Single Abstract Method) support
-TODO: this should more generally be "first class functions"
+ _____________________
+/                     \
+|         66666666    |
+|        6::::::6     |
+|       6::::::6      |
+|      6::::::6       |
+|     6::::::6        |
+|    6::::::6         |
+|   6::::::6          |       higher order functions
+|  6::::::::66666     |         (with SAM support)
+| 6::::::::::::::66   |
+| 6::::::66666:::::6  |
+| 6:::::6     6:::::6 |
+| 6:::::6     6:::::6 |
+| 6::::::66666::::::6 |
+|  66:::::::::::::66  |
+|    66:::::::::66    |
+|      666666666      |
+\                     /
+ ---------------------
+        \   ^__^
+         \  (OO)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+
  */
+
+interface ArticleUrlDetector {
+    fun isArticle(url: HttpUrl): Boolean
+}
+
+class LastSlug(val f: (String) -> Boolean) : ArticleUrlDetector {
+    override fun isArticle(url: HttpUrl): Boolean {
+        val lastSlug = url.pathSegments().lastOrNull { it.isNotBlank() }
+        return if (lastSlug == null) false else f(lastSlug)
+    }
+}
+
+fun lastSlugEndsWithDigits() = LastSlug { Regex("""\d{6}$""") in it }
+
+
 
 data class Event(
     val id: String,
@@ -359,7 +517,6 @@ class InProcessEventSender() {
     fun send(event: Event) {
         executor.submit {
             println("processing event id ${event.id} of type ${event.type}")
-
             // do some actual work with the event
         }
     }
@@ -369,7 +526,31 @@ class InProcessEventSender() {
 
 /*
 
-Number 7: Extension methods
+ ______________________
+/                      \
+| 77777777777777777777 |
+| 7::::::::::::::::::7 |
+| 7::::::::::::::::::7 |
+| 777777777777:::::::7 |
+|            7::::::7  |
+|           7::::::7   |
+|          7::::::7    |
+|         7::::::7     |
+|        7::::::7      |        extension methods
+|       7::::::7       |
+|      7::::::7        |
+|     7::::::7         |
+|    7::::::7          |
+|   7::::::7           |
+|  7::::::7            |
+| 77777777             |
+\                      /
+ ----------------------
+        \   ^__^
+         \  (@@)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 
  */
 
@@ -407,54 +588,155 @@ class ExtensionMethodTest2() {
 
 /*
 
-Number 8: let / use / apply
-
+ _____________________
+/                     \
+|      888888888      |
+|    88:::::::::88    |
+|  88:::::::::::::88  |
+| 8::::::88888::::::8 |
+| 8:::::8     8:::::8 |
+| 8:::::8     8:::::8 |
+|  8:::::88888:::::8  |
+|   8:::::::::::::8   |       let & apply
+|  8:::::88888:::::8  |
+| 8:::::8     8:::::8 |
+| 8:::::8     8:::::8 |
+| 8:::::8     8:::::8 |
+| 8::::::88888::::::8 |
+|  88:::::::::::::88  |
+|    88:::::::::88    |
+|      888888888      |
+\                     /
+ ---------------------
+        \   ^__^
+         \  (**)\_______
+            (__)\       )\/\
+             U  ||----w |
+                ||     ||
 */
 
-// TODO: examples
+// public inline fun <T, R> T.let(block: (T) -> R): R = block(this)
+
+fun doSearch2(q: String): List<SearchResult> {
+    val response = Elasticsearch.client.prepareSearch("articles")
+        .addHighlightedField("headline")
+        .setQuery(
+            boolQuery()
+                .must(simpleQueryStringQuery("brexit").field("headline"))
+                .filter(idsQuery("Topic").ids("topic_one", "topic_two"))
+        )
+        .get()
+
+    return response.hits.mapNotNull { h ->
+        val highlight = h.highlightFields["headline"]?.fragments
+
+        highlight?.let {
+            val combinedString = highlight.map { it.string() }.joinToString(" … ")
+
+            SearchResult(
+                highlight = combinedString,
+                score = h.score,
+                id = h.id
+            )
+        }
+    }
+}
+
+// public inline fun <T> T.apply(block: T.() -> Unit): T { block(); return this }
+
+val kinesisProducer = KinesisProducer(
+    KinesisProducerConfiguration().apply {
+        metricsLevel = "summary"
+        metricsNamespace = "some-stream"
+        region = "eu-west-1"
+    }
+)
+
+
 
 /*
 
-Number 9: java language integration (ii)
+ _____________________
+/                     \
+|      999999999      |
+|    99:::::::::99    |
+|  99:::::::::::::99  |
+| 9::::::99999::::::9 |
+| 9:::::9     9:::::9 |
+| 9:::::9     9:::::9 |      operators
+|  9:::::99999::::::9 |       (java library integration ii)
+|   99::::::::::::::9 |
+|     99999::::::::9  |
+|          9::::::9   |
+|         9::::::9    |
+|        9::::::9     |
+|       9::::::9      |
+|      9::::::9       |
+|     9::::::9        |
+|    99999999         |
+\                     /
+ ---------------------
+        \   ^__^
+         \  (--)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 
  */
 
 val timeLeft = Duration.standardMinutes(2)
 val expectedEndTime = DateTime.now().plus(timeLeft)
 
-
-
-
 /*
 
-Number 10: great IDE support
+ _________________________________
+/                                 \
+|   1111111        000000000      |
+|  1::::::1      00:::::::::00    |
+| 1:::::::1    00:::::::::::::00  |
+| 111:::::1   0:::::::000:::::::0 |
+|    1::::1   0::::::0   0::::::0 |
+|    1::::1   0:::::0     0:::::0 |
+|    1::::1   0:::::0     0:::::0 |        great IDE support
+|    1::::l   0:::::0 000 0:::::0 |          (& fast compilation)
+|    1::::l   0:::::0 000 0:::::0 |
+|    1::::l   0:::::0     0:::::0 |
+|    1::::l   0:::::0     0:::::0 |
+|    1::::l   0::::::0   0::::::0 |
+| 111::::::1110:::::::000:::::::0 |
+| 1::::::::::1 00:::::::::::::00  |
+| 1::::::::::1   00:::::::::00    |
+| 111111111111     000000000      |
+\                                 /
+ ---------------------------------
+        \   ^__^
+         \  (xx)\_______
+            (__)\       )\/\
+             U  ||----w |
+                ||     ||
+
 
  */
 
 // SEE ABOVE!!
 
 
-
-
 /*
 
-SUMMARY
+ ___ _   _ _ __ ___  _ __ ___   __ _ _ __ _   _
+/ __| | | | '_ ` _ \| '_ ` _ \ / _` | '__| | | |
+\__ \ |_| | | | | | | | | | | | (_| | |  | |_| |
+|___/\__,_|_| |_| |_|_| |_| |_|\__,_|_|   \__, |
+                                           __/ |
+                                          |___/
 
-The quality and variety of the java ecosystem is a key reason to develop on the JVM.
+Kotlin addresses the needless verbosity of Java...
 
-Kotlin doesn't try to invent its own sub-ecosystem,
-
-TODO
-
-
+ ... while retaining fast compile times
+ ... with great IDE support
+ ... encouraging readability
+ ... embracing the java ecosystem you use today
+ ... without trying to create its own sub-ecosystem
 
 
  */
-
-fun main(args: Array<String>) {
-    System.setProperty("jansi.passthrough", "true")
-    AnsiConsole.systemInstall()
-
-    AnsiConsole.out.println(Ansi.ansi().eraseScreen().render("@|red Hello|@ @|green World|@"))
-    println(Ansi.ansi().bg(Ansi.Color.RED).a("Hello"))
-}

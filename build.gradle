@@ -20,7 +20,6 @@ repositories {
 dependencies {
     compile 'joda-time:joda-time:2.9.3'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'org.jetbrains.kotlinx:kotlinx-support-jdk8:0.3'
 
     compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
@@ -30,7 +29,9 @@ dependencies {
 
     compile 'org.apache.commons:commons-lang3:3.4'
 
-    compile 'org.fusesource.jansi:jansi:1.14'
+    compile "com.squareup.okhttp3:okhttp:3.4.1"
+
+    compile 'com.amazonaws:amazon-kinesis-producer:0.12.0'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.5.2'
