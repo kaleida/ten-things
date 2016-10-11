@@ -37,10 +37,10 @@ import java.util.concurrent.Executors
    1::::l   0:::::0     0:::::0
    1::::l   0:::::0     0:::::0
    1::::l   0::::::0   0::::::0
-111::::::1110:::::::000:::::::0
-1::::::::::1 00:::::::::::::00   Graham Tackley
-1::::::::::1   00:::::::::00     Cofounder & CTO
-111111111111     000000000       kaleida.com
+111::::::1110:::::::000:::::::0  Graham Tackley
+1::::::::::1 00:::::::::::::00   Cofounder & CTO
+1::::::::::1   00:::::::::00     kaleida.com
+111111111111     000000000       @tackers
 
 
 
@@ -57,10 +57,10 @@ import java.util.concurrent.Executors
 */
 
 /* Opening poll */
-val percentUsingKotlinInProduction = 5
-val percentPlayedWithKotlin = 99
-val percentPrimarilyJavaDevelopers = 80
-val percentPrimarilyOtherJvmLanguages = 20
+val percentUsingKotlinInProduction = 0
+val percentPlayedWithKotlin = 0
+val percentPrimarilyJavaDevelopers = 0
+val percentPrimarilyOtherJvmLanguages = 0
 
 
 
@@ -77,28 +77,22 @@ val percentPrimarilyOtherJvmLanguages = 20
 class AudienceProfileTest {
     @Test
     fun haveIGuessedTheAudienceCorrectly() {
-
         val softly = SoftAssertions()
-
         softly.assertThat(percentUsingKotlinInProduction)
             .withFailMessage("Opps this may be teaching you to suck eggs, " +
                 "but at least the talk should be quick")
             .isLessThan(50)
-
         softly.assertThat(percentPlayedWithKotlin)
             .withFailMessage("I expected more to have experimented!")
             .isGreaterThan(25)
-
         softly.assertThat(percentPrimarilyJavaDevelopers)
             .withFailMessage("Sorry I've assumed java knowledge, " +
                 "so take a nap if needs be")
             .isGreaterThan(75)
-
         softly.assertThat(percentPrimarilyOtherJvmLanguages)
             .withFailMessage("I've primarily focused on Kotlin & Java, " +
-                "talk to me afterwards if you want comparisons")
+                "talk to me afterwards if you want other comparisons")
             .isLessThan(40)
-
         softly.assertAll()
 
         println("""
@@ -155,7 +149,7 @@ fun lastName(name: String) = name.split(' ').last()
 
 
 /*
-equivalent to this java class:
+take for example this java class:
 
 public class HelloJava {
     private String name;
@@ -175,7 +169,7 @@ public class HelloJava {
 
  */
 
-class KotlinWelcomeClass(val name: String) {
+class HelloKotlin(val name: String) {
     fun sayHello() = "hello $name"
 }
 
@@ -268,14 +262,11 @@ class DataClassTest {
             socialInteractions = 23000
         )
 
-        assertThat(baseStats)
-            .isEqualTo(sameStatsDifferentObject)
+        assertThat(baseStats).isEqualTo(sameStatsDifferentObject)
 
-        val updated = sameStatsDifferentObject
-            .copy(articleCount = 18)
+        val updated = sameStatsDifferentObject.copy(articleCount = 18)
 
-        assertThat(baseStats)
-            .isNotEqualTo(updated)
+        assertThat(baseStats).isNotEqualTo(updated)
     }
 }
 
@@ -361,8 +352,6 @@ class JsonSerialisationTest {
 
 fun calculateStatsForArticle(url: String): SummaryStats {
 
-    // [go fetch some urls, call some apis and parse the results]
-
     // this generates a compile error:
     //   return null
 
@@ -438,7 +427,7 @@ fun doSearch(q: String): List<SearchResult> {
         .addHighlightedField("headline")
         .setQuery(
             boolQuery()
-                .must(simpleQueryStringQuery("brexit").field("headline"))
+                .must(simpleQueryStringQuery(q).field("headline"))
                 .filter(idsQuery("Topic").ids("topic_one", "topic_two"))
         )
         .get()
@@ -554,8 +543,7 @@ class InProcessEventSender() {
 
  */
 
-fun String.htmlEntityDecode(): String =
-    StringEscapeUtils.unescapeHtml4(this)
+fun String.htmlEntityDecode() = StringEscapeUtils.unescapeHtml4(this)
 
 class ExtensionMethodTest1() {
     @Test
@@ -576,12 +564,11 @@ fun String?.forceNullIfBlank(): String? =
 class ExtensionMethodTest2() {
     @Test
     fun forceNullIfBlankWorks() {
-        val nullString: String? = null
-
-        assertThat(nullString.forceNullIfBlank()).isNull()
         assertThat("orange".forceNullIfBlank()).isNotNull().isEqualTo("orange")
         assertThat("banana ".forceNullIfBlank()).isNotNull().isEqualTo("banana")
         assertThat("  ".forceNullIfBlank()).isNull()
+        val nullString: String? = null
+        assertThat(nullString.forceNullIfBlank()).isNull()
     }
 }
 
@@ -615,6 +602,7 @@ class ExtensionMethodTest2() {
                 ||     ||
 */
 
+// from kotlin standard library:
 // public inline fun <T, R> T.let(block: (T) -> R): R = block(this)
 
 fun doSearch2(q: String): List<SearchResult> {
@@ -631,7 +619,7 @@ fun doSearch2(q: String): List<SearchResult> {
         val highlight = h.highlightFields["headline"]?.fragments
 
         highlight?.let {
-            val combinedString = highlight.map { it.string() }.joinToString(" … ")
+            val combinedString = it.map { it.string() }.joinToString(" … ")
 
             SearchResult(
                 highlight = combinedString,
@@ -642,9 +630,10 @@ fun doSearch2(q: String): List<SearchResult> {
     }
 }
 
+// from kotlin standard library:
 // public inline fun <T> T.apply(block: T.() -> Unit): T { block(); return this }
 
-val kinesisProducer = KinesisProducer(
+fun createKinesisProducer() = KinesisProducer(
     KinesisProducerConfiguration().apply {
         metricsLevel = "summary"
         metricsNamespace = "some-stream"
@@ -664,7 +653,7 @@ val kinesisProducer = KinesisProducer(
 | 9::::::99999::::::9 |
 | 9:::::9     9:::::9 |
 | 9:::::9     9:::::9 |      operators
-|  9:::::99999::::::9 |       (java library integration ii)
+|  9:::::99999::::::9 |       (& java library integration ii)
 |   99::::::::::::::9 |
 |     99999::::::::9  |
 |          9::::::9   |
@@ -683,6 +672,27 @@ val kinesisProducer = KinesisProducer(
                 ||     ||
 
  */
+
+infix operator fun SummaryStats.plus(that: SummaryStats) = SummaryStats(
+    articleCount = this.articleCount + that.articleCount,
+    topicCount = this.topicCount + that.topicCount,
+    socialInteractions = this.socialInteractions + that.socialInteractions
+)
+
+class CombineSummaryStats {
+    @Test
+    fun shouldBeAbleToCombineSummaryStats() {
+        val a = SummaryStats(articleCount = 1, topicCount = 1, socialInteractions = 15)
+        val b = SummaryStats(articleCount = 3, topicCount = 2, socialInteractions = 24)
+
+        val combined = a + b
+        assertThat(combined.socialInteractions).isEqualTo(39)
+    }
+}
+
+
+
+
 
 val timeLeft = Duration.standardMinutes(2)
 val expectedEndTime = DateTime.now().plus(timeLeft)
@@ -723,6 +733,12 @@ val expectedEndTime = DateTime.now().plus(timeLeft)
 
 /*
 
+
+
+
+
+
+
  ___ _   _ _ __ ___  _ __ ___   __ _ _ __ _   _
 / __| | | | '_ ` _ \| '_ ` _ \ / _` | '__| | | |
 \__ \ |_| | | | | | | | | | | | (_| | |  | |_| |
@@ -737,6 +753,14 @@ Kotlin addresses the needless verbosity of Java...
  ... encouraging readability
  ... embracing the java ecosystem you use today
  ... without trying to create its own sub-ecosystem
+
+@tackers
+https://github.com/kaleida/ten-things
+
+
+
+
+
 
 
  */
