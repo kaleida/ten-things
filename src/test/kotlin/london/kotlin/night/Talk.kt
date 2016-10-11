@@ -420,6 +420,12 @@ class CollectionTest {
 }
 
 
+
+
+
+
+
+
 data class SearchResult(val highlight: String, val score: Float, val id: String)
 
 fun doSearch(q: String): List<SearchResult> {
@@ -552,6 +558,10 @@ class ExtensionMethodTest1() {
             .isEqualTo("Colombia's FARC rebels")
     }
 }
+
+
+
+
 
 
 
@@ -746,8 +756,9 @@ val expectedEndTime = DateTime.now().plus(timeLeft)
                                            __/ |
                                           |___/
 
-Kotlin addresses the needless verbosity of Java...
+Kotlin addresses the verbosity of Java...
 
+ ... without introducing significant complexity
  ... while retaining fast compile times
  ... with great IDE support
  ... encouraging readability
